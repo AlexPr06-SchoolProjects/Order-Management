@@ -1,35 +1,46 @@
 ﻿// See https://aka.ms/new-console-template for more information
-struct Order
+
+using Order_Management.Dish;
+using Order_Management.Menu;
+using Order_Management.Order;
+using Order_Management.OrderManagement;
+
+
+List<Dish> myDishes = new List<Dish>()
 {
-    private static int orderId = 0;
-    private static int amount = 0;
-    private bool status;
+    new Dish("Bruschetta", 6.50, Categories.Appetizer),
+    new Dish("Caesar Salad", 7.00, Categories.Appetizer),
+    new Dish("Margherita Pizza", 12.00, Categories.MainCourse),
+    new Dish("Spaghetti Carbonara", 14.00, Categories.MainCourse),
+    new Dish("Tiramisu", 8.00, Categories.Dessert),
+    new Dish("Panna Cotta", 7.50, Categories.Dessert),
+    new Dish("Coca-Cola", 3.00, Categories.Beverage),
+    new Dish("Espresso", 2.50, Categories.Beverage)
+};
 
-    public static int OrderId { get { return Order.orderId; } }
-    public static int Amount {
-        get => amount;
-        set 
-        {
-            if (value < 0)
-                throw new Exception("Amount cannot be negative");
-        } 
-    }
 
-    public bool Status { get => status; init => status = value; }
+Menu menu = new Menu();
+menu.Init(myDishes);
+menu.DisplayMenu();
 
-    public Order(int amount)
-    {
-        Amount += amount;
-        status = false;
-    }
+Console.WriteLine($"Current static dishId: {Dish.LastId}");
 
-    static Order()
-    {
-        Order.orderId++;
-    }
+
+OrderManager orderManager = new OrderManager(menu);
+
+int index = 1;
+Dish dishToOrder = myDishes[index];
+
+
+orderManager.CreateOrder(2, dishToOrder);
+orderManager.CreateOrder(1, myDishes[3]);
+orderManager.DisplayOrders();
+
+enum Categories
+{
+    Appetizer,
+    MainCourse,
+    Dessert,
+    Beverage
 }
 
-class OrderManager
-{
-
-}
