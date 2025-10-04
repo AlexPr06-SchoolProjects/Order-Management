@@ -1,9 +1,9 @@
-﻿
-namespace Order_Management.OrderManagement
+﻿namespace App.OrderManagement
 {
-    using Order_Management.Dish;
-    using Order_Management.Menu;
-    using Order_Management.Order;
+    using App.Dish;
+    using App.Menu;
+    using App.Order;
+
     class OrderManager
     {
         private List<Order> _orderPool = new List<Order>();

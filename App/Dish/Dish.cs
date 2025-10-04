@@ -1,4 +1,4 @@
-﻿namespace Order_Management.Dish
+﻿namespace App.Dish
 {
     class Dish
     {

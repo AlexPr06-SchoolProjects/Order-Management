@@ -1,6 +1,7 @@
-﻿namespace Order_Management.Order
+﻿namespace App.Order
 {
-    using Order_Management.Dish;
+    using App.Dish;
+
     struct Order
     {
         private bool _status;

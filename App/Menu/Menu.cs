@@ -1,6 +1,7 @@
-﻿namespace Order_Management.Menu
+﻿namespace App.Menu
 {
-    using Order_Management.Dish;
+    using App.Dish;
+
     class Menu
     {
         private Dictionary<int, Dish> _dishes;

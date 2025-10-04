@@ -1,10 +1,6 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using Order_Management.Dish;
-using Order_Management.Menu;
-using Order_Management.Order;
-using Order_Management.OrderManagement;
-
+﻿using App.Dish;
+using App.Menu;
+using App.OrderManagement;
 
 List<Dish> myDishes = new List<Dish>()
 {
@@ -42,5 +38,19 @@ enum Categories
     MainCourse,
     Dessert,
     Beverage
+}
+
+public struct Exchange
+{
+    public string Name { get; set; }
+    public string Type { get; set; }
+    public bool Durable { get; set; }
+
+    public Exchange(string name, string type, bool durable)
+    {
+        Name = name;
+        Type = type;
+        Durable = durable;
+    }
 }
 
