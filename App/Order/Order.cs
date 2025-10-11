@@ -2,12 +2,13 @@
 {
     using App.Dish;
 
-    struct Order
+    class Order
     {
-        private bool _status;
+        public bool Status { get; set; }
 
         public int amount;
         public int OrderId { get; init; }
+        public Dish OrderedDish { get; set; }
         public int Amount
         {
             get => amount;
@@ -18,15 +19,11 @@
             }
         }
 
-        private Dish _orderedDish;
-
-        public bool Status { get => _status; init => _status = value; }
-
         public Order(int orderId, int amountToSet, Dish ordered)
         {
             amount = amountToSet;
-            _status = false;
-            _orderedDish = ordered;
+            Status = false;
+            OrderedDish = ordered;
             OrderId = orderId;
         }
     }

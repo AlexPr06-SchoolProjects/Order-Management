@@ -4,13 +4,13 @@ using Order_Management.RabbitMQConfig;
 
 namespace RabbitMQManipulation
 {
-    public class RabbitMQManipulation : IAsyncDisposable
+    abstract public class RabbitMQManipulation : IAsyncDisposable
     {
-        private ConnectionFactory _factory;
-        private IConnection? _connection;
-        private IChannel? _channel;
-        private bool _disposed;
-        public RabbitMQConfig Config { get; set; }
+        protected ConnectionFactory _factory;
+        protected IConnection? _connection;
+        protected IChannel? _channel;
+        protected bool _disposed;
+        public  RabbitMQConfig Config { get; set; }
 
         public RabbitMQManipulation(RabbitMQConfig config)
         {
@@ -34,40 +34,10 @@ namespace RabbitMQManipulation
             Dispose(false);
         }
 
-        private void Dispose(bool disposing)
-        {
-            if (_disposed)
-                return;
-
-            if (disposing)
-            { /* free managed resources if any */  }
-
-
-            // free unmanaged resources
-     
-            try
-            {
-                _channel?.QueueUnbindAsync(
-                   queue: Config.Queue.Name,
-                   exchange: Config.Exchange.Name,
-                   routingKey: Config.Queue.Name,
-                   arguments: null,
-                   cancellationToken: default
-                );
-                _channel?.Dispose();
-                _connection?.Dispose();
-            }
-            catch { /* ignore */}
-
-            _channel = null;
-            _connection = null;
-
-            _disposed = true;
-        }
-
-        public async ValueTask DisposeAsync()
+        virtual public async ValueTask DisposeAsync()
         {
             await UnbindRabbitMQQueueAsync();
+            await DeleteRabbitMQQueueAsync();
             await CloseRabbitMQChannelAsync();
             await CloseRabbitMQConnectionAsync();
             await DisposeRabbitMQChannelAsync();
@@ -76,6 +46,7 @@ namespace RabbitMQManipulation
             GC.SuppressFinalize(this);
         }
 
+        #region public methods
         public async Task<bool> ConnectAsync()
         {
             try
@@ -118,30 +89,7 @@ namespace RabbitMQManipulation
             return true;
         }
 
-
-        public async Task<bool> CreateQueueAsync()
-        {
-            if (_channel is null)
-                return false;
-            try
-            {
-                await _channel.QueueDeclareAsync(
-                    queue: Config.Queue.Name,
-                    durable: Config.Queue.Durable,
-                    exclusive: Config.Queue.Exclusive,
-                    autoDelete: Config.Queue.AutoDelete,
-                    arguments: null,
-                    passive: false,
-                    noWait: false,
-                    cancellationToken: default
-                );
-            }
-            catch
-            {
-                return false;
-            }
-            return true;
-        }
+        abstract public Task<bool> CreateQueueAsync();
 
         public async Task<bool> BindRabbitMQQueueAsync()
         {
@@ -164,6 +112,7 @@ namespace RabbitMQManipulation
             }
             return true;
         }
+
         public async Task<bool> UnbindRabbitMQQueueAsync()
         {
             if (_channel is null)
@@ -207,27 +156,46 @@ namespace RabbitMQManipulation
         }
 
         public byte[] ConvertMessageToBytes(string message) => System.Text.Encoding.UTF8.GetBytes(message);
-        
-        public async Task<bool> PublishMessageAsync(string message)
-        {
-            if (_channel is null)
-                return false;
+       
+        #endregion
 
-            byte[] messageBodyBytes = ConvertMessageToBytes(message);
-            var props = new BasicProperties();
-            props.Persistent = true;
-            props.ContentType = "text/plain";
-            props.DeliveryMode = (DeliveryModes)2;
-            props.Expiration = "60000"; // Message expiration time in milliseconds
-            await _channel.BasicPublishAsync(
-                exchange: Config.Exchange.Name,
-                routingKey: Config.Queue.Name,
-                mandatory: true,
-                basicProperties: props,
-                body: messageBodyBytes,
-                cancellationToken: default
-            );
-            return true;
+        #region private methods
+        virtual protected void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            { /* free managed resources if any */  }
+
+
+            // free unmanaged resources
+
+            try
+            {
+                _channel?.QueueUnbindAsync(
+                   queue: Config.Queue.Name,
+                   exchange: Config.Exchange.Name,
+                   routingKey: Config.Queue.Name,
+                   arguments: null,
+                   cancellationToken: default
+                );
+                _channel?.QueueDeleteAsync(
+                     queue: Config.Queue.Name,
+                     ifUnused: false,
+                     ifEmpty: false,
+                     noWait: false,
+                     cancellationToken: default
+                );
+                _channel?.Dispose();
+                _connection?.Dispose();
+            }
+            catch { /* ignore */}
+
+            _channel = null;
+            _connection = null;
+
+            _disposed = true;
         }
 
         private async Task CloseRabbitMQChannelAsync()
@@ -261,5 +229,6 @@ namespace RabbitMQManipulation
             await _connection.DisposeAsync();
             _connection = null;
         }
+        #endregion
     }
 }

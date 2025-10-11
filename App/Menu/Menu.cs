@@ -4,16 +4,16 @@
 
     class Menu
     {
-        private Dictionary<int, Dish> _dishes;
+        public Dictionary<int, Dish> Dishes { get; set; }
 
         public Menu()
         {
-            _dishes = new Dictionary<int, Dish>();
+            Dishes = new Dictionary<int, Dish>();
         }
 
         public int getLastKey()
         {
-            return _dishes.Any() ? _dishes.Keys.Max() : 0;
+            return Dishes.Any() ? Dishes.Keys.Max() : 0;
         }
 
         public void Init(List<Dish> dishesToBeInitialized)
@@ -22,34 +22,24 @@
             foreach (var dish in dishesToBeInitialized)
             {
                 lastKey++;
-                _dishes.Add(lastKey, dish);
+                Dishes.Add(lastKey, dish);
             }
         }
 
         public void AddDish(Dish dish)
         {
             int lastKey = getLastKey();
-            _dishes.Add(lastKey++, new Dish(dish.Name, dish.Price, dish.Category));
+            Dishes.Add(lastKey++, new Dish(dish.Name, dish.Price, dish.Category));
         }
 
         public void RemoveDish(int key)
         {
-            _dishes.Remove(key);
-        }
-
-        public void DisplayMenu()
-        {
-            foreach (var pair in _dishes)
-            {
-                int dishId = pair.Key;
-                Dish dish = pair.Value;
-                Console.WriteLine($"{dish.Category} {dish.Name}  -  Price: ${dish.Price}");
-            }
+            Dishes.Remove(key);
         }
 
         public bool ContainsDish(Dish dish)
         {
-            return _dishes.ContainsValue(dish);
+            return Dishes.ContainsValue(dish);
         }
     }
 

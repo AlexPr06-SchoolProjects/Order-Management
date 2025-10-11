@@ -3,41 +3,46 @@
     using App.Dish;
     using App.Menu;
     using App.Order;
+    using Spectre.Console;
 
     class OrderManager
     {
-        private List<Order> _orderPool = new List<Order>();
-        private int _poolLength { get; set; }
-        private Menu? _menu;
+        public Dictionary<int, Order> OrderPool {  get; set; }
+        private int PoolLength { get; set; }
+        private readonly Menu? _menu;
 
         public OrderManager(Menu referenceMenu)
         {
             _menu = referenceMenu;
+            OrderPool = new Dictionary<int, Order>();
         }
 
-        void increasePoolLength()
+        private void IncreasePoolLength()
         {
-            _poolLength++;
+            PoolLength++;
         }
 
-        public void CreateOrder(int amount, Dish dish)
+        public Order CreateOrder(int amount, Dish dish)
         {
             if (_menu == null)
                 throw new Exception("Menu is not set");
             if (!_menu.ContainsDish(dish))
                 throw new Exception("Dish is not in the menu");
 
-            increasePoolLength();
-            Order newOrder = new Order(_poolLength, amount, dish);
-            _orderPool.Add(newOrder);
+            IncreasePoolLength();
+            Order newOrder = new Order(PoolLength, amount, dish);
+            return newOrder;
         }
 
-        public void DisplayOrders()
+        public void FullfillAsSuccessfullOrder(int orderIndex)
         {
-            foreach (var order in _orderPool)
-            {
-                Console.WriteLine($"Order ID: {order.OrderId}  -  Amount: {order.Amount}  -  Status: {(order.Status ? "Completed" : "Pending")}");
-            }
+            if(orderIndex < 0 || orderIndex >= OrderPool.Count)
+                return;
+            OrderPool[orderIndex].Status = true;
         }
+  
+        public void PushOrderToOrdersPool(Order orderToPush) => OrderPool.Add(PoolLength, orderToPush);
+        
+        public void RemoveOrderFromOrdersPool(int orderIndex) => OrderPool.Remove(orderIndex);
     }
 }
