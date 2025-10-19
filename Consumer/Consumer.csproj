@@ -11,6 +11,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Spectre.Console" Version="0.51.1" />
+	</ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\RabbitMQManipulation\RabbitMQManipulation.csproj" />
   </ItemGroup>

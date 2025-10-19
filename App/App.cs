@@ -3,7 +3,7 @@ using App.Order;
 using App.Menu;
 using App.OrderManagement;
 using App.FoodCatagory;
-using App.GUIManager;
+using MyGUI = App.GUI.GUIManager;
 using System.Diagnostics;
 using Spectre.Console;
 using Order_Management.RabbitMQConfig;
@@ -156,7 +156,7 @@ List<Dish> myDishes = new List<Dish>()
 };
 
 
-GUIManager gUIManager = new GUIManager();
+MyGUI gUIManager = new MyGUI();
 Menu menu = new Menu();
 menu.Init(myDishes);
 

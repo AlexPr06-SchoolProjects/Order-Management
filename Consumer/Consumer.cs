@@ -6,11 +6,16 @@
     using System.Text;
     using System.Threading.Tasks;
     using RabbitMQClass = RabbitMQManipulation.RabbitMQManipulation;
+    using GUIManager;
     using Newtonsoft.Json;
  
     public class Consumer : RabbitMQClass
     {
-        public Consumer(RabbitMQConfig config) : base(config) {}
+        private GUIManager gUIManager;
+        public Consumer(RabbitMQConfig config) : base(config)
+        {
+            gUIManager = new GUIManager();
+        }
 
         override public async Task<bool> CreateQueueAsync()
         {
@@ -75,13 +80,14 @@
                     object message = JsonConvert.DeserializeObject<object>(jsonMessage)!;
 
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"🍽️  New order received from a customer: \"{message}\"");
+                    Console.WriteLine($"🍽️  New order received from a customer:");
                     Console.ResetColor();
+                    gUIManager.DisplayOrderInTable(jsonMessage);
 
                     response = await ProcessRequestAsync(message);
 
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"✅ Order completed successfully: {response}");
+                    Console.WriteLine($"✅ Order completed successfully!");
                     Console.ResetColor();
                 }
                 catch (Exception ex)
@@ -143,11 +149,10 @@
 
         private async Task<string> ProcessRequestAsync(object request)
             {
-                await Task.Delay(500); // Simulate processing time
-            Console.WriteLine(request);
+            await Task.Delay(500);
             var result = new string(request.ToString());
 
-                return result;
+            return result;
         }
     }
 }

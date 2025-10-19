@@ -1,4 +1,4 @@
-﻿namespace App.GUIManager
+﻿namespace App.GUI
 {
     using App.Dish;
     using App.Order;
