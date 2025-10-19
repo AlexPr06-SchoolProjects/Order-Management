@@ -6,6 +6,7 @@
     using System.Collections.Concurrent;
     using System.Text;
     using RabbitMQClass = RabbitMQManipulation.RabbitMQManipulation;
+    using Newtonsoft.Json;
 
     public class Publisher : RabbitMQClass
     {
@@ -90,7 +91,7 @@
             return true;
         }
 
-        public async Task<string> CallRpcAsync(string message, TimeSpan timeout)
+        public async Task<string> CallRpcAsync(object message, TimeSpan timeout)
         {
             if (_channel is null)
                 throw new InvalidOperationException("Channel is not initialized.");
@@ -106,12 +107,14 @@
                 ReplyTo = _replyQueueName
             };
 
+            string jsonMessage = JsonConvert.SerializeObject(message);
+
             await _channel.BasicPublishAsync(
                 exchange: Config.Exchange.Name,
                 routingKey: Config.Queue.Name,
                 mandatory: false,
                 basicProperties: props,
-                body: Encoding.UTF8.GetBytes(message)
+                body: Encoding.UTF8.GetBytes(jsonMessage)
             );
             using var cts = new CancellationTokenSource(timeout);
 

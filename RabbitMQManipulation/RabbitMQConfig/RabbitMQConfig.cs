@@ -44,7 +44,6 @@ namespace Order_Management.RabbitMQConfig
         public Exchange Exchange { get; set; }
         public Queue Queue { get; set; }
 
-        // можно задать значения по умолчанию
         public RabbitMQConfig()
         {
             User = "amtuviim";

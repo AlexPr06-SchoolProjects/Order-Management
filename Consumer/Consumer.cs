@@ -6,6 +6,8 @@
     using System.Text;
     using System.Threading.Tasks;
     using RabbitMQClass = RabbitMQManipulation.RabbitMQManipulation;
+    using Newtonsoft.Json;
+ 
     public class Consumer : RabbitMQClass
     {
         public Consumer(RabbitMQConfig config) : base(config) {}
@@ -35,64 +37,116 @@
         }
 
         public async Task StartListeneningAsync()
-        {
-            if (_channel is null)
-                throw new Exception("Channel is not initialized.");
+{
+    if (_channel is null)
+        throw new Exception("Channel is not initialized.");
 
-            var consumer = new AsyncEventingBasicConsumer(_channel);
+
+    while (true)
+    {
+        try
+        {
+            // if connection lost — try to reconnect
+            if (_channel is null || !_channel.IsOpen)
+            {
+
+                bool reconnected = await ConnectAsync();
+                if (!reconnected)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("❌ Failed to reconnect. Trying again in 5 seconds...");
+                    Console.ResetColor();
+                    await Task.Delay(5000);
+                    continue;
+                }
+
+                await CreateQueueAsync();
+                await BindRabbitMQQueueAsync();
+            }
+
+            var consumer = new AsyncEventingBasicConsumer(_channel!);
             consumer.ReceivedAsync += async (model, ea) =>
             {
                 string response = string.Empty;
                 try
                 {
                     var body = ea.Body.ToArray();
-                    var message = Encoding.UTF8.GetString(body);
+                    var jsonMessage = Encoding.UTF8.GetString(body);
+                    object message = JsonConvert.DeserializeObject<object>(jsonMessage)!;
+
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine($"🍽️  New order received from a customer: \"{message}\"");
+                    Console.ResetColor();
+
                     response = await ProcessRequestAsync(message);
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"✅ Order completed successfully: {response}");
+                    Console.ResetColor();
                 }
                 catch (Exception ex)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"❌ Error while preparing the dish: {ex.Message}");
+                    Console.ResetColor();
                     response = $"Error: {ex.Message}";
                 }
                 finally
                 {
-                    // Send response back to the reply queue
+                    // Send response back
                     var replyProps = new BasicProperties
                     {
                         CorrelationId = ea.BasicProperties?.CorrelationId
                     };
                     var responseBytes = Encoding.UTF8.GetBytes(response);
-                   
                     var replyTo = ea.BasicProperties?.ReplyTo;
+
                     if (!string.IsNullOrEmpty(replyTo))
                     {
-                       await _channel.BasicPublishAsync(
-                           exchange: "",
-                           routingKey: ea.BasicProperties?.ReplyTo,
-                           mandatory: false,
-                           basicProperties: replyProps,
-                           body: responseBytes
-                       );
+                        await _channel!.BasicPublishAsync(
+                            exchange: "",
+                            routingKey: replyTo!,
+                            mandatory: false,
+                            basicProperties: replyProps,
+                            body: responseBytes
+                        );
                     }
-                 
-                    await _channel.BasicAckAsync(deliveryTag: ea.DeliveryTag, multiple: false);
 
+                    await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false);
                 }
+
                 await Task.Yield();
             };
 
             // Start consuming messages
-            await _channel.BasicConsumeAsync(
+            await _channel!.BasicConsumeAsync(
                 queue: Config.Queue.Name,
                 autoAck: false,
                 consumer: consumer,
                 cancellationToken: default
             );
-        }
 
-        private async Task<string> ProcessRequestAsync(string request)
+            // Keep the kitchen alive indefinitely
+            await Task.Delay(Timeout.Infinite);
+        }
+        catch (Exception ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"🔥 Kitchen error: {ex.Message}. Reconnecting in 5 seconds...");
+            Console.ResetColor();
+            await Task.Delay(5000);
+        }
+    }
+}
+
+
+
+        private async Task<string> ProcessRequestAsync(object request)
             {
                 await Task.Delay(500); // Simulate processing time
-            var result = new string(request.Reverse().ToArray());
+            Console.WriteLine(request);
+            var result = new string(request.ToString());
+
                 return result;
         }
     }

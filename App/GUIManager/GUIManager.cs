@@ -32,52 +32,72 @@
             AnsiConsole.WriteLine(); // Padding 
         }
 
-       
-        public async Task DisplayOrdersTable(Dictionary<int, Order> orders)
+
+        public async Task DisplayOrdersTable(
+     Dictionary<int, OrderTask> OrderTasks,
+     Func<OrderTask, Task<string>> sendOrderCallback
+ )
         {
-
             var table = new Table()
-                       .Border(TableBorder.Rounded)
-                       .Title("[yellow bold]🧾 Current Orders[/]")
-                       .Caption("[dim]Manage your orders easily[/]");
+                .Border(TableBorder.Rounded)
+                .Title("[yellow bold]🧾 Current Orders[/]")
+                .Caption("[dim]Manage your orders easily[/]");
 
-            table.AddColumn(new TableColumn("[u]Order ID[/]").Centered());
-            table.AddColumn(new TableColumn("[u]Dish[/]").Centered());
-            table.AddColumn(new TableColumn("[u]Amount[/]").Centered());
-            table.AddColumn(new TableColumn("[u]Status[/]").Centered());
+            table.AddColumn("[u]Order ID[/]");
+            table.AddColumn("[u]Dish[/]");
+            table.AddColumn("[u]Amount[/]");
+            table.AddColumn("[u]Status[/]");
 
-            await AnsiConsole.Live(new Table())
-                 .AutoClear(false)
-                 .Overflow(VerticalOverflow.Ellipsis)
-                 .StartAsync(async ctx =>
-                 {
+            // Initial population of the table
+            foreach (var (_, orderTask) in OrderTasks)
+            {
+                var order = orderTask.Order;
+                table.AddRow(
+                    order.OrderId.ToString(),
+                    $"[blue]{order.OrderedDish}[/]",
+                    order.Amount.ToString(),
+                    "[yellow]Processing...[/]"
+                );
+            }
 
-                     foreach (var (index, order) in orders) 
-                     {
-                         table.AddRow(
-                            order.OrderId.ToString(),
-                            $"[blue]{order.OrderedDish}[/]",
-                            order.Amount.ToString(),
-                            order.Status ? "[green]Completed[/]" : "[yellow]Processing...[/]"
-                         );
+            await AnsiConsole.Live(table)
+                .AutoClear(false)
+                .Overflow(VerticalOverflow.Ellipsis)
+                .StartAsync(async ctx =>
+                {
+                    foreach (var (id, orderTask) in OrderTasks)
+                    {
+                        await sendOrderCallback(orderTask);
+                        orderTask.Order.Status = true;
 
-                         ctx.UpdateTarget(table);
+                        // Повністю оновлюємо таблицю
+                        var updatedTable = new Table()
+                            .Border(TableBorder.Rounded)
+                            .Title("[yellow bold]🧾 Current Orders[/]")
+                            .Caption("[dim]Manage your orders easily[/]");
+                        updatedTable.AddColumn("[u]Order ID[/]");
+                        updatedTable.AddColumn("[u]Dish[/]");
+                        updatedTable.AddColumn("[u]Amount[/]");
+                        updatedTable.AddColumn("[u]Status[/]");
 
-                         await Task.Delay(500); // Imitation
+                        foreach (var (_, task) in OrderTasks)
+                        {
+                            var order = task.Order;
+                            updatedTable.AddRow(
+                                order.OrderId.ToString(),
+                                $"[blue]{order.OrderedDish}[/]",
+                                order.Amount.ToString(),
+                                order.Status ? "[green]Completed[/]" : "[yellow]Processing...[/]"
+                            );
+                        }
 
-                         order.Status = true;
-
-                         table.Rows.Update(
-                             order.OrderId - 1, 
-                             3, 
-                             cellData: new Markup("[green]Completed[/]")
-                         );
-
-                         ctx.UpdateTarget(table); // Table rerendering 
-                     }
-                 });
+                        ctx.UpdateTarget(updatedTable);
+                        await Task.Delay(500); 
+                    }
+                });
         }
-        
+
+
         public FoodCatagory getUserCategoryChoice()
         {
             var userCategory = AnsiConsole.Prompt(
@@ -110,6 +130,18 @@
                   })
             );
             return userInput;
+        }
+
+        public bool askUser(string question)
+        {
+            var confirmation = AnsiConsole.Prompt(
+                new TextPrompt<bool>(question)
+                .AddChoice(true)
+                .AddChoice(false)
+                .DefaultValue(true)
+                .WithConverter(choice => choice ? "y" : "n"));
+
+            return confirmation;
         }
     }
 }

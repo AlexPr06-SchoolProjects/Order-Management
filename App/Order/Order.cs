@@ -27,4 +27,30 @@
             OrderId = orderId;
         }
     }
+
+    class OrderTask
+    {
+        public Order Order { get; set; }
+        public TaskCompletionSource<bool> CompletionSignal { get; set; }
+
+        public OrderTask(Order order)
+        {
+            Order = order;
+            CompletionSignal = new TaskCompletionSource<bool>();
+        }
+    }
+
+     class OrderMessage
+    {
+        public int OrderId { get; set; }
+        public Dish OrderedDish { get; set; }
+        public int Amount { get; set; }
+
+        public OrderMessage(int orderId, Dish orderedDish, int amount)
+        {
+            OrderId = orderId;
+            OrderedDish = orderedDish;
+            Amount = amount;
+        }
+    }
 }
