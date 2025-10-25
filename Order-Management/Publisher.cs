@@ -11,12 +11,12 @@
     public class Publisher : RabbitMQClass
     {
         private string _replyQueueName;
-        private readonly AsyncEventingBasicConsumer _consumer;
+        //private readonly AsyncEventingBasicConsumer _consumer;
         private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> _pendingResponses = new();
         public Publisher(RabbitMQConfig config) : base(config)
         {
             _replyQueueName = string.Empty;
-            _consumer = null!;
+            //_consumer = null!;
         }
 
         override public async Task<bool> CreateQueueAsync()
