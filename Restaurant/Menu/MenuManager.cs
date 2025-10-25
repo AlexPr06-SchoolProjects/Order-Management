@@ -1,22 +1,21 @@
 ﻿namespace Restaurant.Menu
 {
     using Restaurant.Dish;
-    using Restaurant.FoodCatagory;
-    using Spectre.Console;
+    using Restaurant.FoodCategory;
 
-    class MenuManager
+    public class MenuManager
     {
         private Menu _menu;
-        public Dictionary<FoodCatagory, Dictionary<int, Dish>> DividedOntoCategories { get; set; }
+        public Dictionary<FoodCategory, Dictionary<int, Dish>> DividedOntoCategories { get; set; }
         public MenuManager(Menu menu)
         {
             _menu = menu;
-            DividedOntoCategories = new Dictionary<FoodCatagory, Dictionary<int, Dish>>();
+            DividedOntoCategories = new Dictionary<FoodCategory, Dictionary<int, Dish>>();
             Init();
         }
         private void Init()
         {
-            foreach (FoodCatagory category in Enum.GetValues(typeof(FoodCatagory)))
+            foreach (FoodCategory category in Enum.GetValues(typeof(FoodCategory)))
             {
                 DividedOntoCategories.Add(category, new Dictionary<int, Dish>());
             }

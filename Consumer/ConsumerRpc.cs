@@ -1,10 +1,10 @@
 ﻿using RabbitMQRpcConsumer = Consumer.Consumer;
-using Order_Management.RabbitMQConfig;
+using RabbitMQConfiguration = RabbitMQConfig.RabbitMQConfig;
 
 // Set console output to UTF-8 to support emojis
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-RabbitMQConfig rabbitMQConfig = new RabbitMQConfig();
+RabbitMQConfiguration rabbitMQConfig = new RabbitMQConfiguration();
 
 Console.ForegroundColor = ConsoleColor.Yellow;
 Console.WriteLine("👨‍🍳 The chef walks into the kitchen and checks the equipment...");

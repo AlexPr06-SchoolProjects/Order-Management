@@ -3,9 +3,8 @@
     using Restaurant.Dish;
     using Restaurant.Menu;
     using Restaurant.Order;
-    using Spectre.Console;
 
-    class OrderManager
+    public class OrderManager
     {
         public Dictionary<int, Order> OrderPool { get; set; }
         private int PoolLength { get; set; }

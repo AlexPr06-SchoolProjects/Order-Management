@@ -1,6 +1,6 @@
-﻿namespace App.FoodCatagory
+﻿namespace Restaurant.FoodCategory
 {    
-    enum FoodCatagory
+    public enum FoodCategory
     {
         Appetizer,
         MainCourse,

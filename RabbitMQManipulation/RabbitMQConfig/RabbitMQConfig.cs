@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client;
 
-namespace Order_Management.RabbitMQConfig
+namespace RabbitMQConfig
 {
     public struct Exchange
     {

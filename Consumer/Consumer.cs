@@ -1,6 +1,6 @@
 ﻿namespace Consumer
 {
-    using Order_Management.RabbitMQConfig;
+    using RabbitMQConfig;
     using RabbitMQ.Client;
     using RabbitMQ.Client.Events;
     using System.Text;

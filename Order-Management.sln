@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App", "App\App.csproj", "{9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitMQManipulation", "RabbitMQManipulation\RabbitMQManipulation.csproj", "{83BB79A5-9AEA-447B-8973-E65E1AA1A21B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restaurant", "Restaurant\Restaurant.csproj", "{44A6DBD8-2D9A-46BE-A0C6-E52281034F36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Waiter", "Waiter\Waiter.csproj", "{7D9578B5-A629-4C03-8C31-702C6CAE09A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{83BB79A5-9AEA-447B-8973-E65E1AA1A21B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83BB79A5-9AEA-447B-8973-E65E1AA1A21B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83BB79A5-9AEA-447B-8973-E65E1AA1A21B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44A6DBD8-2D9A-46BE-A0C6-E52281034F36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44A6DBD8-2D9A-46BE-A0C6-E52281034F36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44A6DBD8-2D9A-46BE-A0C6-E52281034F36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44A6DBD8-2D9A-46BE-A0C6-E52281034F36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D9578B5-A629-4C03-8C31-702C6CAE09A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D9578B5-A629-4C03-8C31-702C6CAE09A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D9578B5-A629-4C03-8C31-702C6CAE09A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D9578B5-A629-4C03-8C31-702C6CAE09A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

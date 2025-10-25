@@ -1,6 +1,6 @@
 ﻿
 using RabbitMQ.Client;
-using Order_Management.RabbitMQConfig;
+using RabbitMQConfiguration = RabbitMQConfig.RabbitMQConfig;
 
 namespace RabbitMQManipulation
 {
@@ -10,9 +10,9 @@ namespace RabbitMQManipulation
         protected IConnection? _connection;
         protected IChannel? _channel;
         protected bool _disposed;
-        public  RabbitMQConfig Config { get; set; }
+        public RabbitMQConfiguration Config { get; set; }
 
-        public RabbitMQManipulation(RabbitMQConfig config)
+        public RabbitMQManipulation(RabbitMQConfiguration config)
         {
             _factory = new ConnectionFactory();
             Config = config;

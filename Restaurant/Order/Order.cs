@@ -2,7 +2,7 @@
 {
     using Restaurant.Dish;
 
-    class Order
+    public class Order
     {
         public bool Status { get; set; }
 
@@ -28,7 +28,7 @@
         }
     }
 
-    class OrderTask
+    public class OrderTask
     {
         public Order Order { get; set; }
         public TaskCompletionSource<bool> CompletionSignal { get; set; }
@@ -40,8 +40,8 @@
         }
     }
 
-     class OrderMessage
-    {
+     public class OrderMessage
+     {
         public int OrderId { get; set; }
         public Dish OrderedDish { get; set; }
         public int Amount { get; set; }

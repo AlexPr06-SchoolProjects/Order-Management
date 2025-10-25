@@ -2,13 +2,13 @@
 {
     using Restaurant.Dish;
     using Restaurant.Order;
-    using Restaurant.FoodCatagory;
+    using Restaurant.FoodCategory;
     using Spectre.Console;
 
-    class GUIManager
+    public class GUIManager
     {
         public GUIManager() { }
-        public void DisplayMenuTable(FoodCatagory category, Dictionary<int, Dish> dishes)
+        public void DisplayMenuTable(FoodCategory category, Dictionary<int, Dish> dishes)
         {
             var table = new Table()
                     .Border(TableBorder.Rounded)
@@ -98,12 +98,12 @@
         }
 
 
-        public FoodCatagory getUserCategoryChoice()
+        public FoodCategory getUserCategoryChoice()
         {
             var userCategory = AnsiConsole.Prompt(
-                new TextPrompt<FoodCatagory>("Choice category of your food?")
-                  .AddChoices(Enum.GetValues<FoodCatagory>())
-                  .DefaultValue(FoodCatagory.MainCourse));
+                new TextPrompt<FoodCategory>("Choice category of your food?")
+                  .AddChoices(Enum.GetValues<FoodCategory>())
+                  .DefaultValue(FoodCategory.MainCourse));
             return userCategory;
         }
            

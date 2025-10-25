@@ -7,13 +7,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Spectre.Console" Version="0.51.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Consumer\Consumer.csproj" />
-    <ProjectReference Include="..\Order-Management\Publisher.csproj" />
-  </ItemGroup>
-
 </Project>

@@ -2,7 +2,7 @@
 {
     using Restaurant.Dish;
 
-    class Menu
+    public class Menu
     {
         public Dictionary<int, Dish> Dishes { get; set; }
 
