@@ -1,13 +1,14 @@
 ﻿namespace Consumer
 {
-    using RabbitMQConfig;
+    using Newtonsoft.Json.Linq;
+    using GUIManager;
+    using Newtonsoft.Json;
     using RabbitMQ.Client;
     using RabbitMQ.Client.Events;
+    using RabbitMQConfig;
     using System.Text;
     using System.Threading.Tasks;
     using RabbitMQClass = RabbitMQManipulation.RabbitMQManipulation;
-    using GUIManager;
-    using Newtonsoft.Json;
  
     public class Consumer : RabbitMQClass
     {
@@ -42,118 +43,162 @@
         }
 
         public async Task StartListeneningAsync()
-{
-    if (_channel is null)
-        throw new Exception("Channel is not initialized.");
-
-
-    while (true)
-    {
-        try
         {
-            // if connection lost — try to reconnect
-            if (_channel is null || !_channel.IsOpen)
+            if (_channel is null)
+                throw new Exception("Channel is not initialized.");
+
+
+            while (true)
             {
-
-                bool reconnected = await ConnectAsync();
-                if (!reconnected)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("❌ Failed to reconnect. Trying again in 5 seconds...");
-                    Console.ResetColor();
-                    await Task.Delay(5000);
-                    continue;
-                }
-
-                await CreateQueueAsync();
-                await BindRabbitMQQueueAsync();
-            }
-
-            var consumer = new AsyncEventingBasicConsumer(_channel!);
-            consumer.ReceivedAsync += async (model, ea) =>
-            {
-                string response = string.Empty;
                 try
                 {
-                    var body = ea.Body.ToArray();
-                    var jsonMessage = Encoding.UTF8.GetString(body);
-                    object message = JsonConvert.DeserializeObject<object>(jsonMessage)!;
+                    // if connection lost — try to reconnect
+                    if (_channel is null || !_channel.IsOpen)
+                    {
 
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"🍽️  New order received from a customer:");
-                    Console.ResetColor();
-                    gUIManager.DisplayOrderInTable(jsonMessage);
+                        bool reconnected = await ConnectAsync();
+                        if (!reconnected)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("❌ Failed to reconnect. Trying again in 5 seconds...");
+                            Console.ResetColor();
+                            await Task.Delay(5000);
+                            continue;
+                        }
 
-                    response = await ProcessRequestAsync(message);
+                        await CreateQueueAsync();
+                        await BindRabbitMQQueueAsync();
+                    }
 
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"✅ Order completed successfully!");
-                    Console.ResetColor();
+                    var consumer = new AsyncEventingBasicConsumer(_channel!);
+                    consumer.ReceivedAsync += async (model, ea) =>
+                    {
+                        string response = string.Empty;
+                        try
+                        {
+                            var body = ea.Body.ToArray();
+                            string jsonMessage = Encoding.UTF8.GetString(body);
+                            object message = JsonConvert.DeserializeObject<object>(jsonMessage)!;
+
+                            Console.ForegroundColor = ConsoleColor.Cyan;
+                            Console.WriteLine($"🍽️  New order received from a customer:");
+                            Console.ResetColor();
+                            gUIManager.DisplayOrderInTable(jsonMessage);
+
+                            response = await ProcessRequestAsync(jsonMessage);
+
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine($"✅ Order completed successfully!");
+                            Console.ResetColor();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"❌ Error while preparing the dish: {ex.Message}");
+                            Console.ResetColor();
+                            response = $"Error: {ex.Message}";
+                        }
+                        finally
+                        {
+                            // Send response back
+                            var replyProps = new BasicProperties
+                            {
+                                CorrelationId = ea.BasicProperties?.CorrelationId
+                            };
+                            var responseBytes = Encoding.UTF8.GetBytes(response);
+                            var replyTo = ea.BasicProperties?.ReplyTo;
+
+                            if (!string.IsNullOrEmpty(replyTo))
+                            {
+                                await _channel!.BasicPublishAsync(
+                                    exchange: "",
+                                    routingKey: replyTo!,
+                                    mandatory: false,
+                                    basicProperties: replyProps,
+                                    body: responseBytes
+                                );
+                            }
+
+                            await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                        }
+
+                        await Task.Yield();
+                    };
+
+                    // Start consuming messages
+                    await _channel!.BasicConsumeAsync(
+                        queue: Config.Queue.Name,
+                        autoAck: false,
+                        consumer: consumer,
+                        cancellationToken: default
+                    );
+
+                    // Keep the kitchen alive indefinitely
+                    await Task.Delay(Timeout.Infinite);
                 }
                 catch (Exception ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"❌ Error while preparing the dish: {ex.Message}");
+                    Console.WriteLine($"🔥 Kitchen error: {ex.Message}. Reconnecting in 5 seconds...");
                     Console.ResetColor();
-                    response = $"Error: {ex.Message}";
+                    await Task.Delay(5000);
                 }
-                finally
-                {
-                    // Send response back
-                    var replyProps = new BasicProperties
-                    {
-                        CorrelationId = ea.BasicProperties?.CorrelationId
-                    };
-                    var responseBytes = Encoding.UTF8.GetBytes(response);
-                    var replyTo = ea.BasicProperties?.ReplyTo;
-
-                    if (!string.IsNullOrEmpty(replyTo))
-                    {
-                        await _channel!.BasicPublishAsync(
-                            exchange: "",
-                            routingKey: replyTo!,
-                            mandatory: false,
-                            basicProperties: replyProps,
-                            body: responseBytes
-                        );
-                    }
-
-                    await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false);
-                }
-
-                await Task.Yield();
-            };
-
-            // Start consuming messages
-            await _channel!.BasicConsumeAsync(
-                queue: Config.Queue.Name,
-                autoAck: false,
-                consumer: consumer,
-                cancellationToken: default
-            );
-
-            // Keep the kitchen alive indefinitely
-            await Task.Delay(Timeout.Infinite);
+            }
         }
-        catch (Exception ex)
+
+        private async Task<string> ProcessRequestAsync(string request)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"🔥 Kitchen error: {ex.Message}. Reconnecting in 5 seconds...");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("🔪 Preparing the dish...");
             Console.ResetColor();
-            await Task.Delay(5000);
-        }
-    }
-}
 
+            await Task.Delay(500); // simulate initial preparation
 
-
-        private async Task<string> ProcessRequestAsync(object request)
+            try
             {
-            await Task.Delay(500);
-            var result = new string(request.ToString());
+                // Parse the incoming JSON order
+                var order = JObject.Parse(request);
 
-            return result;
+                int orderId = (int)order["OrderId"]!;
+                int amount = (int)order["Amount"]!;
+                string dishName = (string)order["OrderedDish"]!["Name"]!;
+                double price = (double)order["OrderedDish"]!["Price"]!;
+
+                // Simulate cooking progress
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine($"⏳ Cooking {amount}x {dishName} (Order #{orderId})...");
+                Console.ResetColor();
+
+                // simulate “cooking time” (e.g. 2–5 seconds)
+                int cookTime = new Random().Next(2000, 5000);
+                await Task.Delay(cookTime);
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"🍽️ {dishName} is ready! Served for ${price * amount:F2} 💵");
+                Console.ResetColor();
+
+                // Return confirmation
+                var response = new JObject
+                {
+                    ["OrderId"] = orderId,
+                    ["Status"] = "Ready",
+                    ["Dish"] = dishName,
+                    ["Total"] = price * amount,
+                    ["CookTimeMs"] = cookTime
+                };
+
+                return response.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"❌ Failed to process order: {ex.Message}");
+                Console.ResetColor();
+                return JsonConvert.SerializeObject(new { Status = "Error", Message = ex.Message });
+            }
         }
+    
+        
     }
 }
 

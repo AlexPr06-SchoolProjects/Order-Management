@@ -62,14 +62,6 @@
             _replyQueueName = replyQueue.QueueName;
 
             // Creating consumer for answers
-
-            /*
-             ea — это BasicDeliverEventArgs (или производный), содержит:
-
-                ea.Body — тело сообщения (ReadOnlyMemory<byte> в новых версиях).
-                ea.BasicProperties — IBasicProperties с метаданными (headers, CorrelationId, ReplyTo и др.).
-                ea.DeliveryTag и т.д.
-            */
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.ReceivedAsync += async (model, ea) =>
             {
@@ -138,6 +130,21 @@
             {
                 _pendingResponses.TryRemove(correlationId, out _);
             }
+        }
+
+        public async Task DisposePublisherAsync()
+        {
+            // Cancel pending RPC calls
+            foreach (var tcs in _pendingResponses.Values)
+                tcs.TrySetCanceled();
+
+            _pendingResponses.Clear();
+
+            // Close channel if open
+            if (_channel?.IsOpen == true)
+                await _channel.CloseAsync();
+
+            _channel?.Dispose();
         }
     }
 }

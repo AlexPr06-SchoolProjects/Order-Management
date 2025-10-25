@@ -9,6 +9,12 @@ class App
     {
         Console.OutputEncoding = Encoding.UTF8;
 
+        foreach (var procName in new[] { "Waiter", "Consumer" })
+            foreach (var proc in Process.GetProcessesByName(procName))
+                try { proc.Kill(); proc.WaitForExit(); } catch { /* ignore */ }
+        
+
+
         bool runnedConsumer = RunConsole("\"..\\..\\..\\..\\Consumer\\Consumer.csproj\"");
         if (!runnedConsumer)
         {
@@ -51,7 +57,7 @@ class App
             var psi = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
-                // Use /c instead of /k so the new console closes automatically after it finishes
+                // Using /c instead of /k so the new console closes automatically after it finishes
                 Arguments = $"/c start dotnet run --project {projectPath}",
                 UseShellExecute = true,
                 CreateNoWindow = true

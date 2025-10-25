@@ -1,33 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GUIManager
 {
     class GUIManager
     {
         public GUIManager() { }
-
-        //public void DisplayOrder(string jsonOrder)
-        //{
-        //    JObject objOrder = JObject.Parse(jsonOrder);
-        //    try
-        //    {
-        //        int orderId = (int)objOrder["OrderId"];
-        //        int amount = (int)objOrder["Amount"];
-        //        string dishName = (string)objOrder["OrderedDish"]["Name"];
-        //        double price = (double)objOrder["OrderedDish"]["Price"];
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"[!] Error parsing order JSON: {ex.Message}");
-        //    }
-        //    Console.WriteLine();
-        //}
 
         public void DisplayOrderInTable(string jsonOrder)
         {
@@ -66,7 +44,5 @@ namespace GUIManager
                 Console.WriteLine($"[!] Error parsing order JSON: {ex.Message}");
             }
         }
-
-
     }
 }
