@@ -48,6 +48,8 @@
                 throw new Exception("Channel is not initialized.");
 
 
+            var consumer = new AsyncEventingBasicConsumer(_channel!);
+
             while (true)
             {
                 try
@@ -70,7 +72,6 @@
                         await BindRabbitMQQueueAsync();
                     }
 
-                    var consumer = new AsyncEventingBasicConsumer(_channel!);
                     consumer.ReceivedAsync += async (model, ea) =>
                     {
                         string response = string.Empty;
@@ -85,7 +86,7 @@
                             Console.ResetColor();
                             gUIManager.DisplayOrderInTable(jsonMessage);
 
-                            response = await ProcessRequestAsync(jsonMessage);
+                            response = ProcessRequestAsync(jsonMessage);
 
                             Console.ForegroundColor = ConsoleColor.Green;
                             Console.WriteLine($"✅ Order completed successfully!");
@@ -146,13 +147,11 @@
             }
         }
 
-        private async Task<string> ProcessRequestAsync(string request)
+        private string ProcessRequestAsync(string request)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("🔪 Preparing the dish...");
             Console.ResetColor();
-
-            await Task.Delay(500); // simulate initial preparation
 
             try
             {
@@ -169,9 +168,6 @@
                 Console.WriteLine($"⏳ Cooking {amount}x {dishName} (Order #{orderId})...");
                 Console.ResetColor();
 
-                // simulate “cooking time” (e.g. 2–5 seconds)
-                int cookTime = new Random().Next(2000, 5000);
-                await Task.Delay(cookTime);
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"🍽️ {dishName} is ready! Served for ${price * amount:F2} 💵");
@@ -183,8 +179,8 @@
                     ["OrderId"] = orderId,
                     ["Status"] = "Ready",
                     ["Dish"] = dishName,
-                    ["Total"] = price * amount,
-                    ["CookTimeMs"] = cookTime
+                    ["Amount"] = amount,
+                    ["Price"] = price,
                 };
 
                 return response.ToString();
@@ -196,9 +192,7 @@
                 Console.ResetColor();
                 return JsonConvert.SerializeObject(new { Status = "Error", Message = ex.Message });
             }
-        }
-    
-        
+        }  
     }
 }
 

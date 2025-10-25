@@ -136,7 +136,7 @@ menu.Init(myDishes);
 OrderManager orderManager = new OrderManager(menu);
 MenuManager menuManager = new MenuManager(menu);
 menuManager.SepearateOntoCategories();
-
+List<object> ChefAnswers = new List<object>();
 
 
 
@@ -148,8 +148,6 @@ async Task<string> SendOrderToChef(OrderTask order)
     try
     {
         string response = await publisher.CallRpcAsync(message, TimeSpan.FromSeconds(10));
-        //Console.WriteLine($"[.] Got response for Order {order.Order.OrderId}: {response}");
-
         order.CompletionSignal.TrySetResult(true);
         return response;
     }
@@ -177,6 +175,7 @@ while (weAreWorking)
 {
     var ordering = true;
     List<Order> orders = new List<Order>();
+    List<string> chefAnswers = new List<string>();
     while (ordering)
     {
 
@@ -218,11 +217,13 @@ while (weAreWorking)
 
     // Display orders' table
 
-
-    await gUIManager.DisplayOrdersTable(orderTasks, SendOrderToChef);
+    // Fullfil chefAnswers list with chef's replies from server
+    await gUIManager.DisplayOrdersTable(orderTasks, SendOrderToChef, chefAnswers);
 
     Console.WriteLine();
     AnsiConsole.MarkupLine("[green]✅ All orders completed![/]");
+
+    gUIManager.DisplayBill(chefAnswers);
 
     bool ifUserWantsToOrderSthElse = gUIManager.askUser("Would you like to orde something?");
     if (!ifUserWantsToOrderSthElse)

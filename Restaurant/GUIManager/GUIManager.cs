@@ -4,6 +4,7 @@
     using Restaurant.Order;
     using Restaurant.FoodCategory;
     using Spectre.Console;
+    using Newtonsoft.Json.Linq;
 
     public class GUIManager
     {
@@ -34,9 +35,10 @@
 
 
         public async Task DisplayOrdersTable(
-     Dictionary<int, OrderTask> OrderTasks,
-     Func<OrderTask, Task<string>> sendOrderCallback
- )
+            Dictionary<int, OrderTask> OrderTasks,
+            Func<OrderTask, Task<string>> sendOrderCallback,
+            List<string> chefAnswers
+        )
         {
             var table = new Table()
                 .Border(TableBorder.Rounded)
@@ -67,7 +69,8 @@
                 {
                     foreach (var (id, orderTask) in OrderTasks)
                     {
-                        await sendOrderCallback(orderTask);
+                        string chefReply = await sendOrderCallback(orderTask);
+                        chefAnswers.Add(chefReply);
                         orderTask.Order.Status = true;
 
                         // Повністю оновлюємо таблицю
@@ -142,6 +145,70 @@
                 .WithConverter(choice => choice ? "y" : "n"));
 
             return confirmation;
+        }
+
+        public void DisplayBill(List<string> chefReplies)
+        {
+            if (chefReplies == null || chefReplies.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[red]⚠️ No replies received from the chef.[/]");
+                return;
+            }
+
+            var billTable = new Table()
+                .Border(TableBorder.Rounded)
+                .Title("[yellow bold]🧾 Final Bill[/]")
+                .Caption("[dim]Automatically generated after order completion[/]");
+
+            billTable.AddColumn("[u]Order ID[/]");
+            billTable.AddColumn("[u]Dish[/]");
+            billTable.AddColumn("[u]Status[/]");
+            billTable.AddColumn("[u]Total ($)[/]");
+
+            double grandTotal = 0;
+
+            foreach (var reply in chefReplies)
+            {
+                try
+                {
+                    var json = JObject.Parse(reply);
+
+                    int orderId = (int)json["OrderId"]!;
+                    string dish = (string)json["Dish"]!;
+                    string status = (string)json["Status"]!;
+                    int amount = (int)json["Amount"]!;
+                    double price = (double)json["Price"]!;
+                    double total = amount * price;
+
+                    grandTotal += total;
+
+                    billTable.AddRow(
+                        $"[white]{orderId}[/]",
+                        $"[cyan]{dish}[/]",
+                        status == "Ready"
+                            ? "[green]✅ Ready[/]"
+                            : "[yellow]Processing...[/]",
+                        $"[yellow]{amount}[/] × [yellow]{price:F2}[/] = [bold yellow]{total:F2}[/]"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsole.MarkupLine($"[red]❌ Failed to parse reply:[/] {ex.Message}");
+                }
+            }
+
+            // Add empty row and total
+            billTable.AddEmptyRow();
+            billTable.AddRow("", "", "[bold underline]TOTAL[/]", $"[bold green]{grandTotal:F2}[/]");
+
+            // Print nicely within a panel
+            var panel = new Panel(billTable)
+                .Header("[bold blue]🍽️ Customer Bill[/]")
+                .Border(BoxBorder.Double)
+                .Padding(1, 1)
+                .Expand();
+
+            AnsiConsole.Write(panel);
         }
     }
 }
