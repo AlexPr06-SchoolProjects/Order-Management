@@ -16,10 +16,7 @@
             OrderPool = new Dictionary<int, Order>();
         }
 
-        private void IncreasePoolLength()
-        {
-            PoolLength++;
-        }
+        private void IncreasePoolLength() => PoolLength++;
 
         public Order CreateOrder(int amount, Dish dish)
         {
@@ -40,13 +37,15 @@
             OrderPool[orderIndex].Status = true;
         }
 
-        public void PushOrderToOrdersPool(Order orderToPush) {
-            IncreasePoolLength();
-            OrderPool.Add(PoolLength, orderToPush);
+        public void PushOrderToOrdersPool(Order orderToPush)
+        {
+            int index = orderToPush.OrderId;
+            if (!OrderPool.ContainsKey(index))
+                OrderPool.Add(index, orderToPush);
         }
 
-        public void RemoveOrderFromOrdersPool(int orderIndex) {
-            IncreasePoolLength();
+        public void RemoveOrderFromOrdersPool(int orderIndex)
+        {
             OrderPool.Remove(orderIndex);
         }
     }
