@@ -231,27 +231,5 @@ while (weAreWorking)
 }
 
 
-
 Console.WriteLine("Thank you for using our application! Goodbye! 👋");
 return;
-/// ------------------------------- EXPEREMENTING WITH SPECTRE CONSOLE ------------------------------- ///
-
-
-
-/// ------------------------------- EXPEREMENTING WITH SPECTRE CONSOLE ------------------------------- ///
-
-
-//string message = "Order Created: OrderID 12345";
-
-//string response = "";
-//try
-//{
-//    response = await publisher.CallRpcAsync(message, TimeSpan.FromSeconds(10));
-//}
-//catch { Console.WriteLine("Run out!"); }
-//finally
-//{
-//    Console.WriteLine("RPC call completed.");
-//}
-//Console.WriteLine($" [.] Got '{response}'");
-

@@ -1,5 +1,4 @@
-﻿
-using RabbitMQ.Client;
+﻿using RabbitMQ.Client;
 using RabbitMQConfiguration = RabbitMQConfig.RabbitMQConfig;
 
 namespace RabbitMQManipulation
