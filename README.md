@@ -1,6 +1,3 @@
-Perfect 👍 — let’s make a **professional, GitHub-ready README.md** for your **Order Management System** project, fully documenting the concept, structure, tech stack, and workflow (while leaving placeholders for your screenshots).
-
-Here’s a complete version you can copy straight into your repo:
 
 ---
 
@@ -39,13 +36,14 @@ All communication happens through **RabbitMQ**, showing how distributed systems 
 
 
 
-+------------+          +-----------------+          +-----------+
-|   Waiter   |  --->    |   RabbitMQ      |  --->    |   Chef    |
-| (Producer) |          | (Message Queue) |          | (Consumer)|
-+------------+          +-----------------+          +-----------+
-^                                                        |
-|                         RPC Reply                      |
-+--------------------------------------------------------+
+```text
++------------+        +-----------------+        +-----------+
+|   Waiter   | -----> |    RabbitMQ     | -----> |   Chef    |
+| (Producer) |        | (Message Queue) |        | (Consumer)|
++------------+        +-----------------+        +-----------+
+      ^                                                   |
+      |---------------------- RPC Reply ------------------|
+```
 
 
 
@@ -94,12 +92,15 @@ Would you like to order something else? [y/n] (y): n
 
 Your orders have been sent to the Chef. Please, wait...
 
+```text
 🧾 Current Orders
 ╭──────────┬──────────────────┬────────┬───────────╮
 │   ID     │      Dish        │ Amount │   Status  │
 ├──────────┼──────────────────┼────────┼───────────┤
-│    1     │   Pasta Carbonara│   10   │ Preparing │
+│    1     │ Pasta Carbonara  │   10   │ Preparing │
 ╰──────────┴──────────────────┴────────┴───────────╯
+```
+
 
 
 
