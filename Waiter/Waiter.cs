@@ -167,7 +167,7 @@ async Task<string> SendOrderToChef(OrderTask order)
 
 bool weAreWorking = true;
 
-bool ifUserWantsToExit = gUIManager.askUser("Would you like to orde something?");
+bool ifUserWantsToExit = gUIManager.askUser("Would you like to order something?");
 
 if (!ifUserWantsToExit)
     weAreWorking = false;
