@@ -1,34 +1,131 @@
 ﻿using RabbitMQ.Client;
-using RabbitMQConfiguration = RabbitMQConfig.RabbitMQConfig;
+using RabbitMQManipulation.Interfaces.Binders;
+using RabbitMQManipulation.Interfaces.Unbinders;
+using RabbitMQManipulation.Interfaces.Utilizers;
+using RabbitMQManipulation.Structs;
+using Factory = RabbitMQManipulation.RabbitMQFactory.RabbitMQFactory;
 
 namespace RabbitMQManipulation
 {
-    abstract public class RabbitMQManipulation : IAsyncDisposable
+    internal class RabbitMQManipulationAsync
     {
         protected ConnectionFactory _factory;
-        protected IConnection? _connection;
-        protected IChannel? _channel;
+        private RabbitMQResources _rabbitMQResources;
+        public bool IsConnected { get; private set; } = false;
+        private RabbitMQConfig _rabbitMQConfig;
         protected bool _disposed;
-        public RabbitMQConfiguration Config { get; set; }
+        private IAsyncBinder? _binderManager;
+        private IAsyncUnbinder? _unbinderManager;
+        private IAsyncUtilizer? _utilizerManager;
 
-        public RabbitMQManipulation(RabbitMQConfiguration config)
+        public RabbitMQManipulationAsync(RabbitMQConfig rabbitMQConfig, RabbitMQResources rabbitMQResources)
         {
             _factory = new ConnectionFactory();
-            Config = config;
+            _rabbitMQResources = rabbitMQResources;
+            _rabbitMQConfig = rabbitMQConfig;
 
             // Enable automatic recovery
             _factory.AutomaticRecoveryEnabled = true;
 
-            // attempt recovery every 10 seconds
+            // attempt recovery every 5 seconds
             _factory.NetworkRecoveryInterval = TimeSpan.FromSeconds(5);
 
             // Setup connection parameters
-            _factory.Uri = new Uri(config.Url);
-
-            //_factory.ClientProvidedName = "app:order-management component:event-consumer";
+            _factory.Uri = new Uri(_rabbitMQConfig.Url);
+            _rabbitMQResources = rabbitMQResources;
         }
 
-        ~RabbitMQManipulation() 
+        #region public methods
+        public async Task<bool> ConnectAsync()
+        {
+            try
+            {
+                // Create connection 
+                _rabbitMQResources.Connection = await _factory.CreateConnectionAsync();
+                // Open channel
+                _rabbitMQResources.Channel = await _rabbitMQResources.Connection.CreateChannelAsync();
+
+                _binderManager = Factory.createAsyncBinderManager(_rabbitMQResources, _rabbitMQConfig);
+                _unbinderManager = Factory.createAsyncUnbinderManager(_rabbitMQResources, _rabbitMQConfig);
+                _utilizerManager = Factory.createAsyncUtilizerManager(_rabbitMQResources);
+
+                IsConnected = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Connection failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Binder
+        public async Task<bool> CreateExchangeAsync()
+        {
+            if (!IsConnected) return false;
+            return await _binderManager!.CreateExchangeAsync();
+        }
+
+        public async Task<bool> CreateQueueAsync()
+        {
+            if (!IsConnected) return false;
+            return await _binderManager!.CreateQueueAsync();
+        }
+
+        public async Task<bool> BindRabbitMQQueueAsync()
+        {
+            if (!IsConnected) return false;
+            return await _binderManager!.BindRabbitMQQueueAsync();
+        }
+
+        // Unbinder methods
+        public async Task<bool> UnbindRabbitMQQueueAsync()
+        {
+            if (!IsConnected) return false;
+            return await _unbinderManager!.UnbindRabbitMQQueueAsync();
+        }
+
+        public async Task<bool> DeleteRabbitMQQueueAsync()
+        {
+            if (!IsConnected) return false;
+            return await _unbinderManager!.DeleteRabbitMQQueueAsync();
+        }
+
+        #endregion
+
+        #region private methods
+
+        // Utilizer
+        private async Task CloseRabbitMQChannelAsync()
+        {
+            if (!IsConnected)
+                throw new InvalidOperationException("You are not connected!");
+            await _utilizerManager!.CloseChannelAsync();
+        }
+
+        private async Task CloseRabbitMQConnectionAsync()
+        {
+            if (!IsConnected)
+                throw new InvalidOperationException("You are not connected!");
+            await _utilizerManager!.CloseConnectionAsync();
+        }
+
+        private async Task DisposeRabbitMQChannelAsync()
+        {
+            if (!IsConnected)
+                throw new InvalidOperationException("You are not connected!");
+            await _utilizerManager!.DisposeChannelAsync();
+        }
+
+        private async Task DisposeRabbitMQConnectionAsync()
+        {
+            if (!IsConnected)
+                throw new InvalidOperationException("You are not connected!");
+            await _utilizerManager!.DisposeConnectionAsync();
+        }
+        #endregion
+
+        ~RabbitMQManipulationAsync()
         {
             Dispose(false);
         }
@@ -45,121 +142,7 @@ namespace RabbitMQManipulation
             GC.SuppressFinalize(this);
         }
 
-        #region public methods
-        public async Task<bool> ConnectAsync()
-        {
-            try
-            {
-                // Create connection 
-                _connection = await _factory.CreateConnectionAsync();
-                // Open channel
-                _channel = await _connection.CreateChannelAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Connection failed: {ex.Message}");
-                return false;
-            }
-        }
-
-        public async Task<bool> CreateExchangeAsync()
-        {
-            if (_channel is null)
-                return false;
-
-            try
-            {
-                await _channel.ExchangeDeclareAsync(
-                    exchange: Config.Exchange.Name,
-                    type: Config.Exchange.Type,
-                    durable: false,
-                    autoDelete: false,
-                    arguments: null,
-                    noWait: false,
-                    cancellationToken: default
-                );
-            }
-            catch
-            {
-                return false;
-            }
-            return true;
-        }
-
-        abstract public Task<bool> CreateQueueAsync();
-
-        public async Task<bool> BindRabbitMQQueueAsync()
-        {
-            if (_channel is null)
-                return false;
-            try
-            {
-                await _channel.QueueBindAsync(
-                   queue: Config.Queue.Name,
-                   exchange: Config.Exchange.Name,
-                   routingKey: Config.Queue.Name,
-                   arguments: null,
-                   noWait: false,
-                   cancellationToken: default
-                );
-            }
-            catch
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public async Task<bool> UnbindRabbitMQQueueAsync()
-        {
-            if (_channel is null)
-                return false;
-            try
-            {
-                await _channel.QueueUnbindAsync(
-                    queue: Config.Queue.Name,
-                    exchange: Config.Exchange.Name,
-                    routingKey: Config.Queue.Name,
-                    arguments: null,
-                    cancellationToken: default
-                );
-            }
-            catch
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public async Task<bool> DeleteRabbitMQQueueAsync()
-        {
-            if (_channel is null)
-                return false;
-            try
-            {
-                await _channel.QueueDeleteAsync(
-                     queue: Config.Queue.Name,
-                     ifUnused: false,
-                     ifEmpty: false,
-                     noWait: false,
-                     cancellationToken: default
-                );
-            }
-            catch
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public byte[] ConvertMessageToBytes(string message) => System.Text.Encoding.UTF8.GetBytes(message);
-       
-        #endregion
-
-        #region private methods
-        virtual protected void Dispose(bool disposing)
+        virtual public void Dispose(bool disposing)
         {
             if (_disposed)
                 return;
@@ -167,67 +150,19 @@ namespace RabbitMQManipulation
             if (disposing)
             { /* free managed resources if any */  }
 
-
+            if (!IsConnected)
+                throw new InvalidOperationException("You are not connected!");
             // free unmanaged resources
+            _unbinderManager!.UnbindRabbitMQQueueAsync();
+            _unbinderManager!.DeleteRabbitMQQueueAsync();
+            _rabbitMQResources.Channel?.Dispose();
+            _rabbitMQResources.Connection?.Dispose();
 
-            try
-            {
-                _channel?.QueueUnbindAsync(
-                   queue: Config.Queue.Name,
-                   exchange: Config.Exchange.Name,
-                   routingKey: Config.Queue.Name,
-                   arguments: null,
-                   cancellationToken: default
-                );
-                _channel?.QueueDeleteAsync(
-                     queue: Config.Queue.Name,
-                     ifUnused: false,
-                     ifEmpty: false,
-                     noWait: false,
-                     cancellationToken: default
-                );
-                _channel?.Dispose();
-                _connection?.Dispose();
-            }
-            catch { /* ignore */}
-
-            _channel = null;
-            _connection = null;
+            _rabbitMQResources.Channel = null;
+            _rabbitMQResources.Connection = null;
 
             _disposed = true;
+            IsConnected = false;
         }
-
-        private async Task CloseRabbitMQChannelAsync()
-        {
-            if (_channel is null || _channel.IsClosed)
-                return;
-            await _channel.CloseAsync();
-            _channel = null;
-        }
-
-        private async Task CloseRabbitMQConnectionAsync()
-        {
-            if (_connection is null || !_connection.IsOpen)
-                return;
-            await _connection.CloseAsync();
-            _connection = null;
-        }
-
-        private async Task DisposeRabbitMQChannelAsync()
-        {
-            if (_channel is null)
-                return;
-            await _channel.DisposeAsync();
-            _channel = null;
-        }
-
-        private async Task DisposeRabbitMQConnectionAsync()
-        {
-            if (_connection is null)
-                return;
-            await _connection.DisposeAsync();
-            _connection = null;
-        }
-        #endregion
     }
 }

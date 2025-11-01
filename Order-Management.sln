@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restaurant", "Restaurant\Re
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Waiter", "Waiter\Waiter.csproj", "{7D9578B5-A629-4C03-8C31-702C6CAE09A5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RestaurantRabbitMQ", "RestaurantRabbitMQ", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5C351A7D-F071-490E-BCAE-A6E91F6261D6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{10B29E3D-B740-4F9E-8C72-499DCE67DA6F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{83BB79A5-9AEA-447B-8973-E65E1AA1A21B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9A9709ED-BC7A-4934-BE2D-8191110E1CE4}

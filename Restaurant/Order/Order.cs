@@ -52,5 +52,7 @@
             OrderedDish = orderedDish;
             Amount = amount;
         }
-    }
+     }
+
+     interface IOrderDisplayService { }
 }
