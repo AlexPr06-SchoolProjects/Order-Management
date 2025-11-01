@@ -1,5 +1,5 @@
-﻿using RabbitMQManipulation.Interfaces.Unbinders;
-using RabbitMQManipulation.Structs;
+﻿using RabbitMQManipulation.HelperLibrary.Structs;
+using RabbitMQManipulation.Interfaces.Unbinders;
 
 namespace RabbitMQManipulation.HelperLibrary.Async
 {

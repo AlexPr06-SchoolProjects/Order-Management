@@ -1,8 +1,8 @@
 ﻿using RabbitMQManipulation.HelperLibrary.Async;
+using RabbitMQManipulation.HelperLibrary.Structs;
 using RabbitMQManipulation.Interfaces.Binders;
 using RabbitMQManipulation.Interfaces.Unbinders;
 using RabbitMQManipulation.Interfaces.Utilizers;
-using RabbitMQManipulation.Structs;
 
 namespace RabbitMQManipulation.RabbitMQFactory
 {
