@@ -1,5 +1,4 @@
 ﻿using RabbitMQ.Client;
-using RabbitMQManipulation.HelperLibrary.Structs;
 using RabbitMQManipulation.Interfaces.Utilizers;
 
 namespace RabbitMQManipulation.HelperLibrary.Async

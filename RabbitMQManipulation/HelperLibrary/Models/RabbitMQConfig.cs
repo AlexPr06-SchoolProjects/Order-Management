@@ -1,8 +1,8 @@
 ﻿using RabbitMQ.Client;
 
-namespace RabbitMQManipulation.Structs
+namespace RabbitMQManipulation.HelperLibrary
 {
-    internal struct Exchange
+    public class Exchange
     {
         public string Name { get; set; }
         public string Type { get; set; }
@@ -15,7 +15,7 @@ namespace RabbitMQManipulation.Structs
         }
     }
 
-    internal struct Queue
+    public class Queue
     {
         public string Name { get; set; }
         public bool Durable { get; set; }
@@ -33,7 +33,7 @@ namespace RabbitMQManipulation.Structs
         }
     }
 
-    internal struct RabbitMQConfig
+    public class RabbitMQConfig
     {
         public string User { get; set; }
         public string Password { get; set; }

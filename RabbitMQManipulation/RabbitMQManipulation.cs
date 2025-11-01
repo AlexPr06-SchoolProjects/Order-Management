@@ -2,7 +2,7 @@
 using RabbitMQManipulation.Interfaces.Binders;
 using RabbitMQManipulation.Interfaces.Unbinders;
 using RabbitMQManipulation.Interfaces.Utilizers;
-using RabbitMQManipulation.Structs;
+using RabbitMQManipulation.HelperLibrary;
 using Factory = RabbitMQManipulation.RabbitMQFactory.RabbitMQFactory;
 
 namespace RabbitMQManipulation

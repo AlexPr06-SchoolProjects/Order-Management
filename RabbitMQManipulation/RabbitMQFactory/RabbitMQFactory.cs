@@ -1,5 +1,6 @@
-﻿using RabbitMQManipulation.HelperLibrary.Async;
-using RabbitMQManipulation.HelperLibrary.Structs;
+﻿using RabbitMQ.Client;
+using RabbitMQManipulation.HelperLibrary;
+using RabbitMQManipulation.HelperLibrary.Async;
 using RabbitMQManipulation.Interfaces.Binders;
 using RabbitMQManipulation.Interfaces.Unbinders;
 using RabbitMQManipulation.Interfaces.Utilizers;
@@ -8,7 +9,7 @@ namespace RabbitMQManipulation.RabbitMQFactory
 {
     internal static class RabbitMQFactory
     {
-        public static RabbitMQResources createRabbitMQResources() => new RabbitMQResources();
+        public static RabbitMQResources createRabbitMQResources(IConnection? connection, IChannel? channel) => new RabbitMQResources(connection, channel);
         public static RabbitMQConfig createRabbitMQConfig() => new RabbitMQConfig();
         public static IAsyncBinder createAsyncBinderManager(RabbitMQResources rabbitMQResources, RabbitMQConfig rabbitMQConfig) => new AsyncBinderManager(rabbitMQResources, rabbitMQConfig);
         public static IAsyncUnbinder createAsyncUnbinderManager(RabbitMQResources rabbitMQResources, RabbitMQConfig rabbitMQConfig) => new AsyncUnbinderManager(rabbitMQResources, rabbitMQConfig);

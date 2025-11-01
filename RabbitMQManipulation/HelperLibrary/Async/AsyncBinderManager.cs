@@ -1,5 +1,4 @@
 ﻿using RabbitMQManipulation.Interfaces.Binders;
-using RabbitMQManipulation.Structs;
 
 namespace RabbitMQManipulation.HelperLibrary.Async
 {

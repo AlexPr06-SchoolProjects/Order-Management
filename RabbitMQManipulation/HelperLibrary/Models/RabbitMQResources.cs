@@ -1,13 +1,13 @@
 ﻿using RabbitMQ.Client;
 
-namespace RabbitMQManipulation.Structs
+namespace RabbitMQManipulation.HelperLibrary
 {
-    internal struct RabbitMQResources
+    public class RabbitMQResources
     {
         public IConnection? Connection { get; set; }
         public IChannel? Channel { get; set; }
 
-        public RabbitMQResources(IConnection connection, IChannel channel)
+        public RabbitMQResources(IConnection? connection, IChannel? channel)
         {
             Connection = connection;
             Channel = channel;
